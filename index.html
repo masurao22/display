@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,6 +35,8 @@ body {
   <p>読み込み中...</p>
 </div>
 
+<div id="clock" style="position:fixed; top:10px; right:20px; font-size:24px;"></div>
+
 <script>
 // ===== 天気 =====
 function updateWeather() {
@@ -55,8 +58,9 @@ function updateWeather() {
 }
 
 // ===== 運行情報 =====
+
 function checkLine(id, url) {
-  let api = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+  let api = "https://corsproxy.io/?" + encodeURIComponent(url);
 
   fetch(api)
     .then(res => res.text())
@@ -92,13 +96,25 @@ function updateTrain() {
   checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/315/0");
 }
 
+// ===== 時間 =====
+function updateClock() {
+  let now = new Date();
+  let time = now.toLocaleTimeString('ja-JP');
+  document.getElementById("clock").innerHTML = time;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+
+
 // 初回実行
 updateWeather();
 updateTrain();
 
 // 定期更新
 setInterval(updateWeather, 600000); // 天気10分
-setInterval(updateTrain, 60000);    // 運行情報1分
+setInterval(updateTrain, 30000);    // 運行情報1分
 </script>
 
 </body>
