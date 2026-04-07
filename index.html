@@ -1,4 +1,53 @@
-<div style="display:flex;height:100vh;">
-  <a href="https://trafficinfo.westjr.co.jp/kinki.html" style="flex:1;">JR</a>
-  <a href="https://weathernews.jp/" style="flex:1;">天気</a>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Display</title>
+
+<style>
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
+}
+.box {
+  width: 50%;
+  padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box" id="train">
+  <h2>運行情報</h2>
+  <p>取得中...</p>
 </div>
+
+<div class="box" id="weather">
+  <h2>天気</h2>
+  <p>取得中...</p>
+</div>
+
+<script>
+// 天気API（OpenWeather）
+fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=YOUR_API_KEY&units=metric&lang=ja")
+.then(res => res.json())
+.then(data => {
+  document.getElementById("weather").innerHTML =
+    "<h2>天気</h2>" +
+    "気温：" + data.main.temp + "℃<br>" +
+    "天気：" + data.weather[0].description;
+});
+
+// 運行情報（簡易表示）
+document.getElementById("train").innerHTML =
+  "<h2>運行情報</h2>" +
+  "<p>詳細はこちら↓</p>" +
+  "<a href='https://trafficinfo.westjr.co.jp/kinki.html'>JR西日本</a>";
+
+</script>
+
+</body>
+</html>
