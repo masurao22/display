@@ -108,14 +108,17 @@ function checkLine(id, url) {
 function updateTrain() {
   document.getElementById("train").innerHTML = `
     <h2>運行情報</h2>
-    <div>JR環状線：<span id="jr">確認中...</span></div>
+    <div>JR環状線：<span id="kanjo">確認中...</span></div>
+    <div>JR京都線：<span id="kyoto">確認中...</span></div>
     <div>阪神本線：<span id="hanshin">確認中...</span></div>
     <br>
-    <a href="https://transit.yahoo.co.jp/diainfo/236/0">詳細（JR）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/263/0">詳細（JR環状線）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/267/0">詳細（JR京都線）</a><br>
     <a href="https://transit.yahoo.co.jp/diainfo/315/0">詳細（阪神）</a>
   `;
 
-  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/263/0");
+  checkLine("kanjo", "https://transit.yahoo.co.jp/diainfo/263/0");
+  checkLine("kyoto", "https://transit.yahoo.co.jp/diainfo/267/0");
   checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/315/0");
 }
 
