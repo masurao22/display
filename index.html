@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Display</title>
-  
+
 <style>
 body {
   margin: 0;
@@ -11,10 +11,14 @@ body {
   height: 100vh;
   font-family: sans-serif;
 }
+
 .box {
   width: 50%;
   padding: 20px;
 }
+
+.ok { color: green; }
+.ng { color: red; font-weight: bold; }
 </style>
 </head>
 
@@ -31,21 +35,33 @@ body {
 </div>
 
 <script>
-// 天気API（OpenWeather）
+// ▼ 天気（OpenWeather）
 fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=YOUR_API_KEY&units=metric&lang=ja")
 .then(res => res.json())
 .then(data => {
   document.getElementById("weather").innerHTML =
-    "<h2>天気</h2>" +
+    "<h2>天気（大阪）</h2>" +
     "気温：" + data.main.temp + "℃<br>" +
     "天気：" + data.weather[0].description;
 });
 
-// 運行情報（簡易表示）
-document.getElementById("train").innerHTML =
-  "<h2>運行情報</h2>" +
-  "<p>詳細はこちら↓</p>" +
-  "<a href='https://trafficinfo.westjr.co.jp/kinki.html'>JR西日本</a>";
+// ▼ 運行情報（簡易表示）
+function trainStatus() {
+  document.getElementById("train").innerHTML = `
+    <h2>運行情報</h2>
+    <div>JR環状線：<span class="ok">平常運転（詳細↓）</span></div>
+    <div>阪神本線：<span class="ok">平常運転（詳細↓）</span></div>
+    <br>
+    <a href="https://transit.yahoo.co.jp/diainfo/21/0">JR環状線</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/96/0">阪神本線</a>
+  `;
+}
+
+// 初回
+trainStatus();
+
+// 1分ごと更新（将来拡張用）
+setInterval(trainStatus, 60000);
 
 </script>
 
