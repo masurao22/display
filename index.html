@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,8 +13,18 @@ body {
 }
 
 .box {
-  width: 50%;
+  width: 33.3%;
   padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 中央寄せ（時計用） */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 60px;
+  font-weight: bold;
 }
 
 .ok { color: green; }
@@ -25,19 +34,31 @@ body {
 
 <body>
 
-<div class="box" id="train">
-  <h2>運行情報</h2>
-  <p>読み込み中...</p>
-</div>
+<!-- 時計 -->
+<div class="box center" id="clock"></div>
 
+<!-- 天気 -->
 <div class="box" id="weather">
   <h2>天気</h2>
   <p>読み込み中...</p>
 </div>
 
-<div id="clock" style="position:fixed; top:10px; right:20px; font-size:24px;"></div>
+<!-- 運行情報 -->
+<div class="box" id="train">
+  <h2>運行情報</h2>
+  <p>読み込み中...</p>
+</div>
 
 <script>
+// ===== 時計 =====
+function updateClock() {
+  let now = new Date();
+  let time = now.toLocaleTimeString('ja-JP');
+  document.getElementById("clock").innerHTML = time;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
 // ===== 天気 =====
 function updateWeather() {
   fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=b754c9ff2255358afc09bbd01a3ac2de&units=metric&lang=ja")
@@ -53,7 +74,7 @@ function updateWeather() {
   })
   .catch(() => {
     document.getElementById("weather").innerHTML =
-      "<h2>天気</h2><span style='color:red'>取得失敗（APIキー確認）</span>";
+      "<h2>天気</h2><span style='color:red'>取得失敗</span>";
   });
 }
 
@@ -67,7 +88,6 @@ function checkLine(id, url) {
       let status = "遅延情報あり";
       let cls = "ng";
 
-      // 正常判定（両方含むときのみ）
       if (
         html.includes("平常運転") &&
         html.includes("事故・遅延に関する情報はありません")
@@ -81,10 +101,9 @@ function checkLine(id, url) {
     })
     .catch(() => {
       document.getElementById(id).innerHTML =
-        "<span>取得失敗</span>"; // ←黒字
+        "<span>取得失敗</span>";
     });
 }
-
 
 function updateTrain() {
   document.getElementById("train").innerHTML = `
@@ -92,33 +111,21 @@ function updateTrain() {
     <div>JR環状線：<span id="jr">確認中...</span></div>
     <div>阪神本線：<span id="hanshin">確認中...</span></div>
     <br>
-    <a href="https://transit.yahoo.co.jp/diainfo/263/0">詳細（JR）</a><br>
-    <a href="https://transit.yahoo.co.jp/diainfo/315/0">詳細（阪神）</a>
+    <a href="https://transit.yahoo.co.jp/diainfo/66/0">詳細（JR）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/96/0">詳細（阪神）</a>
   `;
 
-  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/263/0");
-  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/315/0");
+  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/66/0");
+  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/96/0");
 }
-
-// ===== 時間 =====
-function updateClock() {
-  let now = new Date();
-  let time = now.toLocaleTimeString('ja-JP');
-  document.getElementById("clock").innerHTML = time;
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-
-
 
 // 初回実行
 updateWeather();
 updateTrain();
 
 // 定期更新
-setInterval(updateWeather, 600000); // 天気10分
-setInterval(updateTrain, 30000);    // 運行情報1分
+setInterval(updateWeather, 600000);
+setInterval(updateTrain, 60000);
 </script>
 
 </body>
