@@ -4,27 +4,25 @@
 <meta charset="utf-8">
 <title>Display</title>
 
-<script>
-let urls = [
-  "https://trafficinfo.westjr.co.jp/kinki.html",
-  "https://weathernews.jp/"
-];
-
-let index = 0;
-
-function switchPage() {
-  index = (index + 1) % urls.length;
-  window.location.href = urls[index];
+<style>
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
 }
 
-setInterval(switchPage, 15000);
-</script>
-
+iframe {
+  width: 50%;
+  height: 100%;
+  border: none;
+}
+</style>
 </head>
 
 <body>
-<script>
-  window.location.href = urls[0];
-</script>
+
+<iframe src="https://trafficinfo.westjr.co.jp/kinki.html"></iframe>
+<iframe src="https://weathernews.jp/"></iframe>
+
 </body>
 </html>
