@@ -58,19 +58,22 @@ function updateWeather() {
 }
 
 // ===== 運行情報 =====
-
 function checkLine(id, url) {
   let api = "https://corsproxy.io/?" + encodeURIComponent(url);
 
   fetch(api)
     .then(res => res.text())
     .then(html => {
-      let status = "平常運転";
-      let cls = "ok";
+      let status = "遅延情報あり";
+      let cls = "ng";
 
-      if (html.includes("遅延") || html.includes("運転見合わせ")) {
-        status = "遅延あり";
-        cls = "ng";
+      // 正常判定（両方含むときのみ）
+      if (
+        html.includes("平常運転") &&
+        html.includes("事故・遅延に関する情報はありません")
+      ) {
+        status = "平常運転";
+        cls = "ok";
       }
 
       document.getElementById(id).innerHTML =
@@ -78,9 +81,10 @@ function checkLine(id, url) {
     })
     .catch(() => {
       document.getElementById(id).innerHTML =
-        "<span style='color:red'>取得失敗</span>";
+        "<span>取得失敗</span>"; // ←黒字
     });
 }
+
 
 function updateTrain() {
   document.getElementById("train").innerHTML = `
