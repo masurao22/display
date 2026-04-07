@@ -35,7 +35,7 @@ body {
 </div>
 
 <script>
-// ▼ 天気（OpenWeather）
+// ===== 天気 =====
 fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=YOUR_API_KEY&units=metric&lang=ja")
 .then(res => res.json())
 .then(data => {
@@ -45,23 +45,50 @@ fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=YOUR_API_KE
     "天気：" + data.weather[0].description;
 });
 
-// ▼ 運行情報（簡易表示）
-function trainStatus() {
+// ===== 運行情報 =====
+function checkLine(name, url) {
+  let api = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+
+  fetch(api)
+    .then(res => res.json())
+    .then(data => {
+      let html = data.contents;
+
+      let status = "平常運転";
+      let cls = "ok";
+
+      if (html.includes("遅延") || html.includes("運転見合わせ")) {
+        status = "遅延あり";
+        cls = "ng";
+      }
+
+      document.getElementById(name).innerHTML =
+        `<span class="${cls}">${status}</span>`;
+    })
+    .catch(() => {
+      document.getElementById(name).innerHTML = "取得失敗";
+    });
+}
+
+function updateTrain() {
   document.getElementById("train").innerHTML = `
     <h2>運行情報</h2>
-    <div>JR環状線：<span class="ok">平常運転（詳細↓）</span></div>
-    <div>阪神本線：<span class="ok">平常運転（詳細↓）</span></div>
+    <div>JR環状線：<span id="jr">確認中...</span></div>
+    <div>阪神本線：<span id="hanshin">確認中...</span></div>
     <br>
-    <a href="https://transit.yahoo.co.jp/diainfo/21/0">JR環状線</a><br>
-    <a href="https://transit.yahoo.co.jp/diainfo/96/0">阪神本線</a>
+    <a href="https://transit.yahoo.co.jp/diainfo/66/0">詳細（JR）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/96/0">詳細（阪神）</a>
   `;
+
+  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/66/0");
+  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/96/0");
 }
 
 // 初回
-trainStatus();
+updateTrain();
 
-// 1分ごと更新（将来拡張用）
-setInterval(trainStatus, 60000);
+// 1分ごと更新
+setInterval(updateTrain, 60000);
 
 </script>
 
