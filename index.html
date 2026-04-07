@@ -26,34 +26,41 @@ body {
 
 <div class="box" id="train">
   <h2>運行情報</h2>
-  <p>取得中...</p>
+  <p>読み込み中...</p>
 </div>
 
 <div class="box" id="weather">
   <h2>天気</h2>
-  <p>取得中...</p>
+  <p>読み込み中...</p>
 </div>
 
 <script>
 // ===== 天気 =====
-fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=YOUR_API_KEY&units=metric&lang=ja")
-.then(res => res.json())
-.then(data => {
-  document.getElementById("weather").innerHTML =
-    "<h2>天気（大阪）</h2>" +
-    "気温：" + data.main.temp + "℃<br>" +
-    "天気：" + data.weather[0].description;
-});
+function updateWeather() {
+  fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=b754c9ff2255358afc09bbd01a3ac2de&units=metric&lang=ja")
+  .then(res => {
+    if (!res.ok) throw new Error("APIエラー");
+    return res.json();
+  })
+  .then(data => {
+    document.getElementById("weather").innerHTML =
+      "<h2>天気（大阪）</h2>" +
+      "気温：" + data.main.temp + "℃<br>" +
+      "天気：" + data.weather[0].description;
+  })
+  .catch(() => {
+    document.getElementById("weather").innerHTML =
+      "<h2>天気</h2><span style='color:red'>取得失敗（APIキー確認）</span>";
+  });
+}
 
 // ===== 運行情報 =====
-function checkLine(name, url) {
-  let api = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+function checkLine(id, url) {
+  let api = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
 
   fetch(api)
-    .then(res => res.json())
-    .then(data => {
-      let html = data.contents;
-
+    .then(res => res.text())
+    .then(html => {
       let status = "平常運転";
       let cls = "ok";
 
@@ -62,11 +69,12 @@ function checkLine(name, url) {
         cls = "ng";
       }
 
-      document.getElementById(name).innerHTML =
+      document.getElementById(id).innerHTML =
         `<span class="${cls}">${status}</span>`;
     })
     .catch(() => {
-      document.getElementById(name).innerHTML = "取得失敗";
+      document.getElementById(id).innerHTML =
+        "<span style='color:red'>取得失敗</span>";
     });
 }
 
@@ -76,20 +84,21 @@ function updateTrain() {
     <div>JR環状線：<span id="jr">確認中...</span></div>
     <div>阪神本線：<span id="hanshin">確認中...</span></div>
     <br>
-    <a href="https://transit.yahoo.co.jp/diainfo/267/0">詳細（JR）</a><br>
-    <a href="https://transit.yahoo.co.jp/diainfo/96/0">詳細（阪神）</a>
+    <a href="https://transit.yahoo.co.jp/diainfo/263/0">詳細（JR）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/315/0">詳細（阪神）</a>
   `;
 
-  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/66/0");
-  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/96/0");
+  checkLine("jr", "https://transit.yahoo.co.jp/diainfo/263/0");
+  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/315/0");
 }
 
-// 初回
+// 初回実行
+updateWeather();
 updateTrain();
 
-// 1分ごと更新
-setInterval(updateTrain, 60000);
-
+// 定期更新
+setInterval(updateWeather, 600000); // 天気10分
+setInterval(updateTrain, 60000);    // 運行情報1分
 </script>
 
 </body>
