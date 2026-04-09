@@ -16,6 +16,24 @@ body {
   width: 33.3%;
   padding: 20px;
   box-sizing: border-box;
+  font-size: 40px;
+}
+
+h2 {
+  font-size: 36px;
+}
+
+#train h2 {
+  font-size: 50px;   /* タイトル大 */
+}
+
+.train-main {
+  font-size: 45px;   /* 路線表示 */
+}
+
+.train-detail {
+  font-size: 20px;   /* 詳細リンク小さめ */
+  margin-top: 15px;
 }
 
 /* 中央寄せ（時計用） */
@@ -23,7 +41,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 100px;
+  font-size: 60px;
   font-weight: bold;
 }
 
@@ -61,16 +79,28 @@ updateClock();
 
 // ===== 天気 =====
 function updateWeather() {
-  fetch("https://api.openweathermap.org/data/2.5/weather?q=Osaka&appid=b754c9ff2255358afc09bbd01a3ac2de&units=metric&lang=ja")
-  .then(res => {
-    if (!res.ok) throw new Error("APIエラー");
-    return res.json();
-  })
+  fetch("https://api.openweathermap.org/data/2.5/forecast?q=Osaka&appid=b754c9ff2255358afc09bbd01a3ac2de&units=metric&lang=ja")
+  .then(res => res.json())
   .then(data => {
+
+    let am = null;
+    let pm = null;
+    let night = null;
+
+    data.list.forEach(item => {
+      let hour = new Date(item.dt * 1000).getHours();
+
+      if (!am && hour >= 6 && hour < 12) am = item;
+      if (!pm && hour >= 12 && hour < 18) pm = item;
+      if (!night && hour >= 18 && hour < 24) night = item;
+    });
+
     document.getElementById("weather").innerHTML =
       "<h2>天気（大阪）</h2>" +
-      "気温：" + data.main.temp + "℃<br>" +
-      "天気：" + data.weather[0].description;
+      (am ? "AM：" + am.weather[0].description + " / " + am.main.temp + "℃<br>" : "") +
+      (pm ? "PM：" + pm.weather[0].description + " / " + pm.main.temp + "℃<br>" : "") +
+      (night ? "夜：" + night.weather[0].description + " / " + night.main.temp + "℃" : "");
+
   })
   .catch(() => {
     document.getElementById("weather").innerHTML =
@@ -78,7 +108,8 @@ function updateWeather() {
   });
 }
 
-// ===== 運行情報 =====
+
+// ===== 運行情報 ===== 
 function checkLine(id, url) {
   let api = "https://corsproxy.io/?" + encodeURIComponent(url);
 
@@ -108,9 +139,13 @@ function checkLine(id, url) {
 function updateTrain() {
   document.getElementById("train").innerHTML = `
     <h2>運行情報</h2>
+
+    <div class="train-main">
     <div>JR環状線：<span id="kanjo">確認中...</span></div>
     <div>JR京都線：<span id="kyoto">確認中...</span></div>
     <div>阪神本線：<span id="hanshin">確認中...</span></div>
+
+    <div class="train-detail"
     <br>
     <a href="https://transit.yahoo.co.jp/diainfo/263/0">詳細（JR環状線）</a><br>
     <a href="https://transit.yahoo.co.jp/diainfo/267/0">詳細（JR京都線）</a><br>
