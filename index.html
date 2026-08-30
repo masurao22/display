@@ -111,27 +111,35 @@ function checkLine(id, url) {
   let api = "https://corsproxy.io/?" + encodeURIComponent(url);
 
   fetch(api)
-    .then(res => res.text())
+    .then(res => {
+      if (!res.ok) throw new Error("取得失敗");
+      return res.text();
+    })
     .then(html => {
-      let status = "遅延情報あり";
-      let cls = "ng";
 
-      if (
-        html.includes("平常運転") &&
-        html.includes("事故・遅延に関する情報はありません")
-      ) {
-        status = "平常運転";
-        cls = "ok";
+      const normalStatus = html.includes("平常運転");
+      const noDelayInfo = html.includes("現在、事故・遅延に関する情報はありません。");
+
+      if (normalStatus && noDelayInfo) {
+        // 2つの条件を両方満たした場合だけ平常運転
+        document.getElementById(id).innerHTML =
+          '<span class="ok">平常運転</span>';
+      } else {
+        // どちらか一方でも無ければ遅延情報あり
+        document.getElementById(id).innerHTML =
+          '<span class="ng">遅延情報あり</span>';
       }
 
-      document.getElementById(id).innerHTML =
-        `<span class="${cls}">${status}</span>`;
     })
     .catch(() => {
+      // Yahooのページ自体を取得できなかった場合
       document.getElementById(id).innerHTML =
-        "<span>取得失敗</span>";
+        '<span>取得失敗</span>';
     });
 }
+
+
+
 
 function updateTrain() {
   document.getElementById("train").innerHTML = `
