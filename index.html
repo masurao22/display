@@ -23,6 +23,7 @@ h2 {
   font-size: 20px;
 }
 
+
 .train-main {
   font-size: 28px;   /* 路線表示 */
 }
@@ -75,15 +76,17 @@ updateClock();
 
 // ===== 天気 =====
 function updateWeather() {
-  fetch("https://openweathermap.org")
+  fetch("https://api.openweathermap.org/data/2.5/forecast?q=Osaka&appid=b754c9ff2255358afc09bbd01a3ac2de&units=metric&lang=ja")
   .then(res => res.json())
   .then(data => {
+
     let am = null;
     let pm = null;
     let night = null;
 
     data.list.forEach(item => {
       let hour = new Date(item.dt * 1000).getHours();
+
       if (!am && hour >= 6 && hour < 12) am = item;
       if (!pm && hour >= 12 && hour < 18) pm = item;
       if (!night && hour >= 18 && hour < 24) night = item;
@@ -91,9 +94,10 @@ function updateWeather() {
 
     document.getElementById("weather").innerHTML =
       "<h2>天気（大阪）</h2>" +
-      (am ? "AM：" + am.weather[0].description + " / " + Math.round(am.main.temp) + "℃<br>" : "") +
-      (pm ? "PM：" + pm.weather[0].description + " / " + Math.round(pm.main.temp) + "℃<br>" : "") +
-      (night ? "夜：" + night.weather[0].description + " / " + Math.round(night.main.temp) + "℃" : "");
+      (am ? "AM：" + am.weather[0].description + " / " + am.main.temp + "℃<br>" : "") +
+      (pm ? "PM：" + pm.weather[0].description + " / " + pm.main.temp + "℃<br>" : "") +
+      (night ? "夜：" + night.weather[0].description + " / " + night.main.temp + "℃" : "");
+
   })
   .catch(() => {
     document.getElementById("weather").innerHTML =
@@ -101,63 +105,57 @@ function updateWeather() {
   });
 }
 
-// ===== 運行情報（CORSフリーの鉄道情報パブリックデータを使用） ===== 
+
+// ===== 運行情報 ===== 
+
+function checkLine(id, url) {
+  let api = "https://corsproxy.io/?" + encodeURIComponent(url);
+
+  fetch(api)
+    .then(res => res.text())
+    .then(html => {
+      let status = "遅延情報あり";
+      let cls = "ng";
+
+      if (
+        html.includes("平常運転") &&
+        html.includes("事故・遅延に関する情報はありません")
+      ) {
+        status = "平常運転";
+        cls = "ok";
+      }
+
+      document.getElementById(id).innerHTML =
+        `<span class="${cls}">${status}</span>`;
+    })
+    .catch(() => {
+      document.getElementById(id).innerHTML =
+        "<span>取得失敗</span>";
+    });
+}
+
+
+
 
 function updateTrain() {
   document.getElementById("train").innerHTML = `
     <h2>運行情報</h2>
+
     <div class="train-main">
-      <div>JR環状線：<span id="kanjo">確認中...</span></div>
-      <div>JR京都線：<span id="kyoto">確認中...</span></div>
-      <div>阪神本線：<span id="hanshin">確認中...</span></div>
-    </div>
-    <div class="train-detail">
-      <br>
-      <a href="https://westjr.co.jp" target="_blank">詳細（JR西日本公式）</a><br>
-      <a href="https://hanshin.co.jp" target="_blank">詳細（阪神電鉄公式）</a>
-    </div>
+    <div>JR環状線：<span id="kanjo">確認中...</span></div>
+    <div>JR京都線：<span id="kyoto">確認中...</span></div>
+    <div>阪神本線：<span id="hanshin">確認中...</span></div>
+
+    <div class="train-detail"
+    <br>
+    <a href="https://transit.yahoo.co.jp/diainfo/263/0">詳細（JR環状線）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/267/0">詳細（JR京都線）</a><br>
+    <a href="https://transit.yahoo.co.jp/diainfo/315/0">詳細（阪神）</a>
   `;
 
-  // JR西日本 運行情報（公式X配信データミラー / CORSフリー）
-  fetch("https://p0x0q.com")
-    .then(res => res.json())
-    .then(data => {
-      // 大阪環状線の判定
-      let kanjoStatus = data.find(line => line.name && line.name.includes("大阪環状線"));
-      if (kanjoStatus && kanjoStatus.status && !kanjoStatus.status.includes("平常")) {
-        document.getElementById("kanjo").innerHTML = `<span class="ng">遅延情報あり</span>`;
-      } else {
-        document.getElementById("kanjo").innerHTML = `<span class="ok">平常運転</span>`;
-      }
-
-      // JR京都線の判定
-      let kyotoStatus = data.find(line => line.name && line.name.includes("JR京都線"));
-      if (kyotoStatus && kyotoStatus.status && !kyotoStatus.status.includes("平常")) {
-        document.getElementById("kyoto").innerHTML = `<span class="ng">遅延情報あり</span>`;
-      } else {
-        document.getElementById("kyoto").innerHTML = `<span class="ok">平常運転</span>`;
-      }
-    })
-    .catch(() => {
-      document.getElementById("kanjo").innerHTML = "<span>取得失敗</span>";
-      document.getElementById("kyoto").innerHTML = "<span>取得失敗</span>";
-    });
-
-  // 阪神電気鉄道 運行情報（公式X配信データミラー / CORSフリー）
-  fetch("https://p0x0q.com")
-    .then(res => res.json())
-    .then(data => {
-      // 阪神本線（または全体）の判定
-      let hanshinStatus = data.find(line => line.name && line.name.includes("阪神本線")) || data[0];
-      if (hanshinStatus && hanshinStatus.status && !hanshinStatus.status.includes("平常")) {
-        document.getElementById("hanshin").innerHTML = `<span class="ng">遅延情報あり</span>`;
-      } else {
-        document.getElementById("hanshin").innerHTML = `<span class="ok">平常運転</span>`;
-      }
-    })
-    .catch(() => {
-      document.getElementById("hanshin").innerHTML = "<span>取得失敗</span>";
-    });
+  checkLine("kanjo", "https://transit.yahoo.co.jp/diainfo/263/0");
+  checkLine("kyoto", "https://transit.yahoo.co.jp/diainfo/267/0");
+  checkLine("hanshin", "https://transit.yahoo.co.jp/diainfo/315/0");
 }
 
 // 初回実行
@@ -165,8 +163,8 @@ updateWeather();
 updateTrain();
 
 // 定期更新
-setInterval(updateWeather, 600000); // 10分
-setInterval(updateTrain, 60000);    // 1分
+setInterval(updateWeather, 600000);
+setInterval(updateTrain, 60000);
 </script>
 
 </body>
